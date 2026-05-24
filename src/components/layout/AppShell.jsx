@@ -3,12 +3,16 @@ import BottomNav from './BottomNav';
 
 export default function AppShell({ children }) {
   return (
-    <div className="max-w-[390px] mx-auto min-h-screen bg-scotia-grey-50 relative">
-      <StatusBar />
-      <div className="pt-[44px] pb-[64px] overflow-y-auto min-h-screen">
+    <div className="max-w-[390px] mx-auto h-full bg-scotia-grey-50 relative flex flex-col">
+      <div className="flex-shrink-0">
+        <StatusBar />
+      </div>
+      <div className="flex-1 overflow-y-auto">
         {children}
       </div>
-      <BottomNav />
+      <div className="flex-shrink-0">
+        <BottomNav />
+      </div>
     </div>
   );
 }

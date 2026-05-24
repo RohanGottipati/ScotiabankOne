@@ -16,8 +16,7 @@ export default function BottomNav() {
   const { momentConfirmed } = useApp();
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-[64px] bg-white border-t border-scotia-grey-200 flex items-center justify-around z-40"
-         style={{ maxWidth: '390px', margin: '0 auto' }}>
+    <div className="h-[64px] bg-white border-t border-scotia-grey-200 flex items-center justify-around z-40">
       {tabs.map((tab) => {
         const isActive = location.pathname === tab.route;
         const Icon = tab.icon;

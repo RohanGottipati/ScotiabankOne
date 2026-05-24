@@ -3,8 +3,7 @@ import { USER } from '../../data/mockData';
 
 export default function StatusBar() {
   return (
-    <div className="fixed top-0 left-0 right-0 h-[44px] bg-white border-b border-scotia-grey-200 flex items-center justify-between px-4 z-40"
-         style={{ maxWidth: '390px', margin: '0 auto' }}>
+    <div className="h-[44px] bg-white border-b border-scotia-grey-200 flex items-center justify-between px-4 z-40">
       <span className="display-number text-scotia-red text-lg font-bold tracking-tight">
         Scotiabank
       </span>

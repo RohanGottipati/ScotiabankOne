@@ -13,7 +13,7 @@ function PhoneFrame({ children }) {
     <div className="min-h-screen bg-[#1A1A1A] flex items-center justify-center p-8">
       <div className="relative w-[390px] h-[844px] bg-white rounded-[55px] shadow-2xl border-[8px] border-[#2D2D2D] overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[35px] bg-[#1A1A1A] rounded-b-2xl z-50" />
-        <div className="pt-[35px] h-full overflow-hidden">
+        <div className="pt-[35px] h-full overflow-y-auto">
           {children}
         </div>
       </div>
