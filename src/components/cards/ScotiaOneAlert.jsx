@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Info, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 
 export default function ScotiaOneAlert({ onDismiss }) {
   const navigate = useNavigate();
@@ -28,12 +28,14 @@ export default function ScotiaOneAlert({ onDismiss }) {
         <p className="text-[13px] text-scotia-grey-700 leading-relaxed flex-1">
           {message}
         </p>
-        <button
-          className="bg-transparent border-none cursor-pointer p-0 flex-shrink-0 text-scotia-grey-400 hover:text-scotia-grey-700 transition-colors"
-          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
-        >
-          <X size={16} />
-        </button>
+        {onDismiss && (
+          <button
+            className="bg-transparent border-none cursor-pointer p-0 flex-shrink-0 text-scotia-grey-400 hover:text-scotia-grey-700 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
     </motion.div>
   );

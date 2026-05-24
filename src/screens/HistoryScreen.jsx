@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { ArrowLeft, Zap, CheckCircle, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 
 export default function HistoryScreen() {
   const navigate = useNavigate();

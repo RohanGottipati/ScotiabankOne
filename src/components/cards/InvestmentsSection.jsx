@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronUp, ChevronDown, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 
 export default function InvestmentsSection() {
   const [isExpanded, setIsExpanded] = useState(true);

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { ACTIVE_MOMENT } from '../data/mockData';
 
 const STEPS = [
@@ -33,7 +33,6 @@ export default function OpenTfsaScreen() {
   const [withTrading, setWithTrading] = useState(false);
 
   const amount = ACTIVE_MOMENT.suggestedAmount;
-  const isLastKycStep = step === STEPS.length - 1;
   const isTradingStep = step === STEPS.length;
 
   const handleSelect = (value) => {

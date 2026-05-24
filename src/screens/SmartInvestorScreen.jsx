@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, Info, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { USER } from '../data/mockData';
 
 const GOAL_CARDS = [
@@ -14,9 +14,9 @@ export default function SmartInvestorScreen() {
   const { balances, hasTfsa } = useApp();
 
   return (
-    <div className="min-h-full bg-scotia-grey-50 flex flex-col">
+    <div className="h-full bg-scotia-grey-50 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-scotia-red text-white px-5 pt-2 pb-4 sticky top-0 z-10">
+      <div className="bg-scotia-red text-white px-5 pt-2 pb-4 flex-shrink-0">
         <div className="flex items-center gap-2 mb-1">
           <button
             onClick={() => navigate('/advice')}
@@ -28,8 +28,8 @@ export default function SmartInvestorScreen() {
         </div>
       </div>
 
-      {/* Sticky logo bar */}
-      <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-scotia-grey-100 sticky top-[54px] z-10 shadow-sm">
+      {/* Logo bar */}
+      <div className="bg-white px-5 py-4 flex items-center justify-between border-b border-scotia-grey-100 flex-shrink-0 shadow-sm">
         <div>
           <div className="text-[13px] text-scotia-grey-700 font-medium">Scotia</div>
           <div className="text-[20px] font-bold text-scotia-purple">Smart Investor</div>
@@ -41,7 +41,7 @@ export default function SmartInvestorScreen() {
         </button>
       </div>
 
-      <div className="px-5 py-6 space-y-8">
+      <div className="flex-1 overflow-y-auto px-5 py-6 space-y-8">
         {/* User name */}
         <h2 className="text-[26px] font-bold text-scotia-grey-900 uppercase">
           {USER.name}

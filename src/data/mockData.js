@@ -72,6 +72,7 @@ export const MOMENTS_HISTORY = [
 
 export const BALANCES = {
   chequing: 1431.61,
+  savings: 8375.73,
   tfsa: 0,
   netWorth: 12807.44,
   tfsaRoomRemaining: 6200.00,
@@ -109,10 +110,4 @@ export const LIVING_RISK_PROFILE = {
 
 export const TOTAL_FOUND_THIS_YEAR = 160.00;
 
-export const INITIAL_TRADING_HOLDINGS = [
-  { symbol: 'AAPL', shares: 25, avgCost: 145.30 },
-  { symbol: 'MSFT', shares: 15, avgCost: 310.50 },
-  { symbol: 'GOOGL', shares: 30, avgCost: 125.80 },
-  { symbol: 'TSLA', shares: 20, avgCost: 210.40 },
-  { symbol: 'NVDA', shares: 10, avgCost: 420.15 },
-];
+export const INITIAL_TRADING_HOLDINGS = [];

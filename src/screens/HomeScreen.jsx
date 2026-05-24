@@ -7,18 +7,15 @@ import QuickAccessCards from '../components/cards/QuickAccessCards';
 import MyBalancesCard from '../components/cards/MyBalancesCard';
 import NavigationCards from '../components/cards/NavigationCards';
 import FeedbackSection from '../components/cards/FeedbackSection';
-import MoneyMomentCard from '../components/cards/MoneyMomentCard';
 import ScotiaOneAlert from '../components/cards/ScotiaOneAlert';
 import ForecastAlert from '../components/cards/ForecastAlert';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 
 export default function HomeScreen() {
   const [activeTab, setActiveTab] = useState('accounts');
-  const [alertDismissed, setAlertDismissed] = useState(false);
-  const [forecastDismissed, setForecastDismissed] = useState(false);
   const { momentConfirmed } = useApp();
 
-  const notifCount = ((!momentConfirmed && !alertDismissed) ? 1 : 0) + (!forecastDismissed ? 1 : 0);
+  const notifCount = (!momentConfirmed ? 1 : 0) + 1;
 
   return (
     <div className="bg-scotia-grey-50">
@@ -56,21 +53,22 @@ export default function HomeScreen() {
 
         {activeTab === 'accounts' ? (
           <div className="p-4 space-y-4">
+            <MyBalancesCard />
+            {!momentConfirmed && (
+              <div className="-mx-4">
+                <ScotiaOneAlert />
+              </div>
+            )}
             <BankingSection />
             <CreditCardsSection />
             <InvestmentsSection />
           </div>
         ) : (
           <div className="py-3 space-y-0">
-            {!momentConfirmed && !alertDismissed && (
-              <ScotiaOneAlert onDismiss={() => setAlertDismissed(true)} />
+            {!momentConfirmed && (
+              <ScotiaOneAlert />
             )}
-            {!forecastDismissed && (
-              <ForecastAlert onDismiss={() => setForecastDismissed(true)} />
-            )}
-            {(momentConfirmed || alertDismissed) && forecastDismissed && (
-              <p className="text-[14px] text-scotia-grey-500 text-center py-4">No new updates</p>
-            )}
+            <ForecastAlert />
           </div>
         )}
       </div>
@@ -83,8 +81,6 @@ export default function HomeScreen() {
         transition={{ delay: 0.1 }}
       >
         <QuickAccessCards />
-
-        <MyBalancesCard />
         <NavigationCards />
         <FeedbackSection />
       </motion.div>

@@ -1,5 +1,5 @@
 import { Bookmark, Sprout, ChevronRight, Plus } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useApp } from '../../context/useApp';
 
 export default function QuickAccessCards() {
   const { hasTfsa } = useApp();

@@ -2,11 +2,11 @@ import { useState, useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { ChevronLeft, Search, TrendingUp, TrendingDown, Star, BarChart3, Activity, Wallet, Settings, Bell, Plus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 
 // ─── Stock reference data (prices / fundamentals) ────────────────────────────
 
-export const STOCK_DATA = {
+const STOCK_DATA = {
   AAPL:  { name: 'Apple Inc.',             price: 178.25, change: 2.35,  changePercent: 1.34,  high: 179.5,  low: 175.8, open: 176.2, volume: '52.3M', marketCap: '2.78T', pe: 29.5, about: 'Apple Inc. designs, manufactures, and markets smartphones, personal computers, tablets, wearables, and accessories worldwide.' },
   MSFT:  { name: 'Microsoft Corp.',        price: 378.90, change: 1.55,  changePercent: 0.41,  high: 380.2,  low: 376.5, open: 377.8, volume: '28.1M', marketCap: '2.82T', pe: 35.2, about: 'Microsoft Corporation develops, licenses, and supports software, services, devices, and solutions worldwide.' },
   GOOGL: { name: 'Alphabet Inc.',          price: 142.65, change: -1.20, changePercent: -0.83, high: 144.3,  low: 142.1, open: 143.8, volume: '31.5M', marketCap: '1.79T', pe: 26.8, about: 'Alphabet Inc. provides various products and services across the Americas, EMEA, and APAC.' },
@@ -43,24 +43,33 @@ function generateChartData(symbol, basePrice, changePercent, timeframe) {
 // ─── BuySellModal ─────────────────────────────────────────────────────────────
 
 function BuySellModal({ type, symbol, onClose }) {
-  const { balances, buyStock, sellStock, tradingHoldings } = useApp();
+  const { balances, hasTfsa, buyStock, sellStock, tradingHoldings } = useApp();
   const [orderType, setOrderType] = useState('market');
   const [quantity, setQuantity] = useState('');
   const [limitPrice, setLimitPrice] = useState('');
+  const [account, setAccount] = useState('chequing');
   const s = STOCK_DATA[symbol] ?? STOCK_DATA.AAPL;
   const qty = parseFloat(quantity || '0');
   const estimated = qty * s.price;
   const holding = tradingHoldings.find(h => h.symbol === symbol);
 
+  const ACCOUNTS = [
+    { key: 'chequing', label: 'Chequing', last4: '7286', balance: balances.chequing },
+    { key: 'savings',  label: 'Savings',  last4: '4518', balance: balances.savings },
+    ...(hasTfsa ? [{ key: 'tfsa', label: 'TFSA', last4: '2183', balance: balances.tfsa }] : []),
+  ];
+
+  const selectedAccount = ACCOUNTS.find(a => a.key === account) ?? ACCOUNTS[0];
+
   const handleSubmit = () => {
     if (qty <= 0) return;
-    if (type === 'buy') buyStock(symbol, qty, s.price);
-    else sellStock(symbol, qty, s.price);
+    if (type === 'buy') buyStock(symbol, qty, s.price, account);
+    else sellStock(symbol, qty, s.price, account);
     onClose();
   };
 
   const canSubmit = qty > 0 && (orderType === 'market' || limitPrice) &&
-    (type === 'sell' ? (holding?.shares ?? 0) >= qty : balances.chequing >= estimated);
+    (type === 'sell' ? (holding?.shares ?? 0) >= qty : selectedAccount.balance >= estimated);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end justify-center z-50">
@@ -112,15 +121,35 @@ function BuySellModal({ type, symbol, onClose }) {
             )}
           </div>
 
-          <div className={`rounded-xl p-4 flex justify-between ${type === 'buy' ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200'}`}>
-            <span className="text-[13px] text-scotia-grey-700">{type === 'buy' ? 'Available (Chequing)' : `Shares owned`}</span>
-            <span className="text-[13px] font-bold text-scotia-grey-900">
-              {type === 'buy' ? `$${balances.chequing.toLocaleString('en-US', { minimumFractionDigits: 2 })}` : `${holding?.shares ?? 0} shares`}
-            </span>
-          </div>
+          {type === 'buy' && (
+            <div>
+              <p className="text-[11px] font-semibold text-scotia-grey-500 uppercase mb-2">Pay from</p>
+              <div className="space-y-2">
+                {ACCOUNTS.map(acc => (
+                  <button key={acc.key} onClick={() => setAccount(acc.key)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border-2 cursor-pointer transition-colors bg-white ${account === acc.key ? 'border-scotia-red' : 'border-scotia-grey-200'}`}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-3 h-3 rounded-full border-2 ${account === acc.key ? 'border-scotia-red bg-scotia-red' : 'border-scotia-grey-300'}`} />
+                      <span className="text-[14px] font-medium text-scotia-grey-900">{acc.label} ({acc.last4})</span>
+                    </div>
+                    <span className="text-[13px] font-semibold text-scotia-grey-700">
+                      ${acc.balance.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
-          {type === 'buy' && qty > 0 && estimated > balances.chequing && (
-            <p className="text-[12px] text-scotia-red font-medium text-center">Insufficient funds in chequing</p>
+          {type === 'sell' && (
+            <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex justify-between">
+              <span className="text-[13px] text-scotia-grey-700">Shares owned</span>
+              <span className="text-[13px] font-bold text-scotia-grey-900">{holding?.shares ?? 0} shares</span>
+            </div>
+          )}
+
+          {type === 'buy' && qty > 0 && estimated > selectedAccount.balance && (
+            <p className="text-[12px] text-scotia-red font-medium text-center">Insufficient funds in {selectedAccount.label}</p>
           )}
           {type === 'sell' && qty > 0 && qty > (holding?.shares ?? 0) && (
             <p className="text-[12px] text-scotia-red font-medium text-center">You only own {holding?.shares ?? 0} shares</p>
@@ -275,7 +304,7 @@ function StockDetail({ symbol, onBack, onBuySell }) {
 
   const chartData = useMemo(
     () => generateChartData(symbol, s.price, s.changePercent, timeframe),
-    [symbol, timeframe]
+    [symbol, s.price, s.changePercent, timeframe]
   );
 
   const minP = Math.min(...chartData.map(d => d.price));
@@ -425,6 +454,156 @@ function SearchStocks({ onSelectStock }) {
   );
 }
 
+// ─── ActivityTab ─────────────────────────────────────────────────────────────
+
+const ACCOUNT_LABELS = { chequing: 'Chequing (7286)', savings: 'Savings (4518)', tfsa: 'TFSA (2183)' };
+
+function ActivityTab() {
+  const { tradeHistory } = useApp();
+
+  if (tradeHistory.length === 0) {
+    return (
+      <div className="px-4 py-16 text-center space-y-2">
+        <Activity size={36} className="text-scotia-grey-200 mx-auto" />
+        <p className="text-[15px] font-semibold text-scotia-grey-700">No activity yet</p>
+        <p className="text-[13px] text-scotia-grey-400">Your trades and orders will appear here.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-4 pt-4 pb-8 space-y-3">
+      <p className="text-[11px] font-semibold text-scotia-grey-500 uppercase tracking-wide">Trade history</p>
+      <div className="bg-white rounded-2xl shadow-sm border border-scotia-grey-100 overflow-hidden divide-y divide-scotia-grey-100">
+        {tradeHistory.map(trade => {
+          const isBuy = trade.type === 'buy';
+          const time = trade.date instanceof Date
+            ? trade.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            : '';
+          const dateStr = trade.date instanceof Date
+            ? trade.date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+            : '';
+          return (
+            <div key={trade.id} className="flex items-center justify-between px-4 py-3">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${isBuy ? 'bg-green-100' : 'bg-red-100'}`}>
+                  {isBuy
+                    ? <TrendingUp size={15} className="text-green-600" />
+                    : <TrendingDown size={15} className="text-scotia-red" />
+                  }
+                </div>
+                <div>
+                  <p className="text-[14px] font-semibold text-scotia-grey-900">
+                    {isBuy ? 'Bought' : 'Sold'} {trade.quantity} × {trade.symbol}
+                  </p>
+                  <p className="text-[11px] text-scotia-grey-400">
+                    {ACCOUNT_LABELS[trade.account] ?? trade.account} · {dateStr} {time}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className={`text-[14px] font-bold ${isBuy ? 'text-scotia-red' : 'text-green-600'}`}>
+                  {isBuy ? '-' : '+'}${trade.total.toFixed(2)}
+                </p>
+                <p className="text-[11px] text-scotia-grey-400">@ ${trade.price.toFixed(2)}</p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── AccountTab ──────────────────────────────────────────────────────────────
+
+function AccountTab() {
+  const { balances } = useApp();
+
+  const steps = [
+    { label: 'Open your account', done: true },
+    { label: 'Add buying power from chequing', done: balances.chequing > 0 },
+    { label: 'Search for your first stock', done: false },
+    { label: 'Place your first trade', done: false },
+  ];
+
+  return (
+    <div className="px-4 pt-5 pb-8 space-y-4">
+      {/* Account card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-scotia-grey-100 overflow-hidden">
+        <div className="px-4 py-3 border-b border-scotia-grey-100">
+          <p className="text-[11px] font-semibold text-scotia-grey-500 uppercase tracking-wide">Your account</p>
+        </div>
+        <div className="divide-y divide-scotia-grey-100">
+          <div className="flex justify-between items-center px-4 py-3">
+            <span className="text-[14px] text-scotia-grey-600">Account type</span>
+            <span className="text-[14px] font-semibold text-scotia-grey-900">Cash Account</span>
+          </div>
+          <div className="flex justify-between items-center px-4 py-3">
+            <span className="text-[14px] text-scotia-grey-600">Account number</span>
+            <span className="text-[14px] font-semibold text-scotia-grey-900">SST-00142</span>
+          </div>
+          <div className="flex justify-between items-center px-4 py-3">
+            <span className="text-[14px] text-scotia-grey-600">Buying power</span>
+            <span className="text-[14px] font-semibold text-scotia-grey-900">
+              ${balances.chequing.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div className="flex justify-between items-center px-4 py-3">
+            <span className="text-[14px] text-scotia-grey-600">Portfolio value</span>
+            <span className="text-[14px] font-semibold text-scotia-grey-900">$0.00</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Getting started checklist */}
+      <div className="bg-white rounded-2xl shadow-sm border border-scotia-grey-100 overflow-hidden">
+        <div className="px-4 py-3 border-b border-scotia-grey-100">
+          <p className="text-[11px] font-semibold text-scotia-grey-500 uppercase tracking-wide">Getting started</p>
+        </div>
+        <div className="divide-y divide-scotia-grey-100">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-center gap-3 px-4 py-3">
+              <div className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${step.done ? 'bg-green-500' : 'bg-scotia-grey-100'}`}>
+                {step.done
+                  ? <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  : <span className="text-[10px] font-bold text-scotia-grey-400">{i + 1}</span>
+                }
+              </div>
+              <span className={`text-[14px] ${step.done ? 'text-scotia-grey-400 line-through' : 'text-scotia-grey-900'}`}>
+                {step.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* What you can do */}
+      <div className="bg-white rounded-2xl shadow-sm border border-scotia-grey-100 overflow-hidden">
+        <div className="px-4 py-3 border-b border-scotia-grey-100">
+          <p className="text-[11px] font-semibold text-scotia-grey-500 uppercase tracking-wide">What you can do</p>
+        </div>
+        <div className="divide-y divide-scotia-grey-100">
+          {[
+            { title: 'Buy & sell stocks', desc: 'Trade Canadian and US equities commission-free.' },
+            { title: 'Browse ETFs', desc: 'Diversify instantly with a single purchase.' },
+            { title: 'Set limit orders', desc: 'Buy or sell only at the price you choose.' },
+          ].map((item) => (
+            <div key={item.title} className="px-4 py-3">
+              <p className="text-[14px] font-semibold text-scotia-grey-900">{item.title}</p>
+              <p className="text-[12px] text-scotia-grey-500 mt-0.5">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p className="text-[11px] text-scotia-grey-400 text-center leading-relaxed px-2">
+        Scotia Smart Trading is provided by The Bank of Nova Scotia. Trading involves risk. Only invest what you can afford.
+      </p>
+    </div>
+  );
+}
+
 // ─── SmartTradingScreen ───────────────────────────────────────────────────────
 
 export default function SmartTradingScreen() {
@@ -441,8 +620,8 @@ export default function SmartTradingScreen() {
   ];
 
   return (
-    <div className="min-h-full bg-scotia-grey-50 flex flex-col">
-      <div className="bg-scotia-red text-white px-5 pt-2 pb-3 sticky top-0 z-10">
+    <div className="h-full bg-scotia-grey-50 flex flex-col overflow-hidden">
+      <div className="bg-scotia-red text-white px-5 pt-2 pb-3 flex-shrink-0">
         <div className="flex items-center justify-between">
           <button onClick={() => navigate('/advice')} className="p-1 -ml-1 bg-transparent border-none cursor-pointer text-white"><ChevronLeft size={22} /></button>
           <span className="text-[17px] font-semibold">Scotia Smart Trading</span>
@@ -450,7 +629,7 @@ export default function SmartTradingScreen() {
         </div>
       </div>
 
-      <div className="bg-white px-5 py-3 flex items-center justify-between border-b border-scotia-grey-100 sticky top-[54px] z-10 shadow-sm">
+      <div className="bg-white px-5 py-3 flex items-center justify-between border-b border-scotia-grey-100 flex-shrink-0 shadow-sm">
         <div>
           <p className="text-[12px] text-scotia-grey-700 font-medium">Scotia</p>
           <p className="text-[18px] font-bold text-scotia-red">Smart Trading</p>
@@ -461,8 +640,8 @@ export default function SmartTradingScreen() {
       <div className="flex-1 overflow-y-auto pb-20">
         {activeTab === 'portfolio' && !selectedStock && <PortfolioDashboard onSelectStock={setSelectedStock} onBuySell={(type, symbol) => setBuySell({ type, symbol })} />}
         {activeTab === 'search'    && !selectedStock && <SearchStocks onSelectStock={setSelectedStock} />}
-        {activeTab === 'activity'  && !selectedStock && <div className="flex items-center justify-center py-20 text-scotia-grey-400"><p className="text-[14px]">No recent activity</p></div>}
-        {activeTab === 'account'   && !selectedStock && <div className="flex items-center justify-center py-20 text-scotia-grey-400"><p className="text-[14px]">Account details coming soon</p></div>}
+        {activeTab === 'activity'  && !selectedStock && <ActivityTab />}
+        {activeTab === 'account' && !selectedStock && <AccountTab />}
         {selectedStock && <StockDetail symbol={selectedStock} onBack={() => setSelectedStock(null)} onBuySell={type => setBuySell({ type, symbol: selectedStock })} />}
       </div>
 

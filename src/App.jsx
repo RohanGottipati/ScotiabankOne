@@ -9,6 +9,8 @@ import AdviceScreen from './screens/AdviceScreen';
 import ForecastScreen from './screens/ForecastScreen';
 import SmartInvestorScreen from './screens/SmartInvestorScreen';
 import SmartTradingScreen from './screens/SmartTradingScreen';
+import NotificationScreen from './screens/NotificationScreen';
+import SplashScreen from './screens/SplashScreen';
 import PortfolioScreen from './screens/PortfolioScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import RiskProfileScreen from './screens/RiskProfileScreen';
@@ -39,6 +41,8 @@ function AppContent() {
   if (isForecast) return <ForecastScreen />;
   if (location.pathname === '/smart-investor') return <SmartInvestorScreen />;
   if (location.pathname === '/smart-trading') return <SmartTradingScreen />;
+  if (location.pathname === '/notification') return <NotificationScreen />;
+  if (location.pathname === '/splash') return <SplashScreen />;
 
   return (
     <AppShell>

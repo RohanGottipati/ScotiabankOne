@@ -20,12 +20,14 @@ export default function ForecastAlert({ onDismiss }) {
         <p className="text-[13px] text-scotia-grey-700 leading-relaxed flex-1">
           Your 30-day forecast is ready. Expected money out exceeds money in by $19.90 — tap to review.
         </p>
-        <button
-          className="bg-transparent border-none cursor-pointer p-0 flex-shrink-0 text-scotia-grey-400 hover:text-scotia-grey-700 transition-colors"
-          onClick={(e) => { e.stopPropagation(); onDismiss(); }}
-        >
-          <X size={16} />
-        </button>
+        {onDismiss && (
+          <button
+            className="bg-transparent border-none cursor-pointer p-0 flex-shrink-0 text-scotia-grey-400 hover:text-scotia-grey-700 transition-colors"
+            onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+          >
+            <X size={16} />
+          </button>
+        )}
       </div>
     </motion.div>
   );

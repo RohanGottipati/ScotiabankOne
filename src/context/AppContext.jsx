@@ -1,7 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { useState } from 'react';
+import { AppContext } from './AppContextObject';
 import { BALANCES, MOMENTS_HISTORY, TOTAL_FOUND_THIS_YEAR, USER, INITIAL_TRADING_HOLDINGS } from '../data/mockData';
-
-const AppContext = createContext();
 
 export function AppProvider({ children }) {
   const [balances, setBalances] = useState(BALANCES);
@@ -10,6 +9,7 @@ export function AppProvider({ children }) {
   const [hasTfsa, setHasTfsa] = useState(USER.hasTfsa);
   const [hasTradingAccount, setHasTradingAccount] = useState(false);
   const [tradingHoldings, setTradingHoldings] = useState(INITIAL_TRADING_HOLDINGS);
+  const [tradeHistory, setTradeHistory] = useState([]);
   const [history, setHistory] = useState(MOMENTS_HISTORY);
   const [totalFoundThisYear, setTotalFoundThisYear] = useState(TOTAL_FOUND_THIS_YEAR);
 
@@ -34,9 +34,9 @@ export function AppProvider({ children }) {
     if (withTrading) setHasTradingAccount(true);
   };
 
-  const buyStock = (symbol, quantity, price) => {
-    const cost = quantity * price;
-    setBalances(prev => ({ ...prev, chequing: parseFloat((prev.chequing - cost).toFixed(2)) }));
+  const buyStock = (symbol, quantity, price, account = 'chequing') => {
+    const cost = parseFloat((quantity * price).toFixed(2));
+    setBalances(prev => ({ ...prev, [account]: parseFloat((prev[account] - cost).toFixed(2)) }));
     setTradingHoldings(prev => {
       const existing = prev.find(h => h.symbol === symbol);
       if (existing) {
@@ -46,11 +46,21 @@ export function AppProvider({ children }) {
       }
       return [...prev, { symbol, shares: quantity, avgCost: parseFloat(price.toFixed(2)) }];
     });
+    setTradeHistory(prev => [{
+      id: Date.now(),
+      type: 'buy',
+      symbol,
+      quantity,
+      price,
+      total: cost,
+      account,
+      date: new Date(),
+    }, ...prev]);
   };
 
-  const sellStock = (symbol, quantity, price) => {
-    const proceeds = quantity * price;
-    setBalances(prev => ({ ...prev, chequing: parseFloat((prev.chequing + proceeds).toFixed(2)) }));
+  const sellStock = (symbol, quantity, price, account = 'chequing') => {
+    const proceeds = parseFloat((quantity * price).toFixed(2));
+    setBalances(prev => ({ ...prev, [account]: parseFloat((prev[account] + proceeds).toFixed(2)) }));
     setTradingHoldings(prev => {
       const existing = prev.find(h => h.symbol === symbol);
       if (!existing) return prev;
@@ -58,6 +68,16 @@ export function AppProvider({ children }) {
       if (remaining <= 0) return prev.filter(h => h.symbol !== symbol);
       return prev.map(h => h.symbol === symbol ? { ...h, shares: remaining } : h);
     });
+    setTradeHistory(prev => [{
+      id: Date.now(),
+      type: 'sell',
+      symbol,
+      quantity,
+      price,
+      total: proceeds,
+      account,
+      date: new Date(),
+    }, ...prev]);
   };
 
   return (
@@ -68,6 +88,7 @@ export function AppProvider({ children }) {
       hasTfsa,
       hasTradingAccount,
       tradingHoldings,
+      tradeHistory,
       history,
       totalFoundThisYear,
       confirmMoment,
@@ -79,5 +100,3 @@ export function AppProvider({ children }) {
     </AppContext.Provider>
   );
 }
-
-export const useApp = () => useContext(AppContext);

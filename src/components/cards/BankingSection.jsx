@@ -1,12 +1,19 @@
 import { useState } from 'react';
 import { ChevronUp, ChevronDown, Plus } from 'lucide-react';
 import { BANKING_ACCOUNTS } from '../../data/mockData';
+import { useApp } from '../../context/useApp';
 
 export default function BankingSection() {
   const [isExpanded, setIsExpanded] = useState(true);
-  const visibleAccounts = BANKING_ACCOUNTS.slice(0, 2);
-  const hiddenCount = BANKING_ACCOUNTS.length - 2;
-  const total = BANKING_ACCOUNTS.reduce((sum, a) => sum + a.balance, 0);
+  const { balances } = useApp();
+  const accounts = BANKING_ACCOUNTS.map((account, index) => {
+    if (index === 0) return { ...account, balance: balances.chequing };
+    if (index === 1 && typeof balances.savings === 'number') return { ...account, balance: balances.savings };
+    return account;
+  });
+  const visibleAccounts = accounts.slice(0, 2);
+  const hiddenCount = accounts.length - 2;
+  const total = accounts.reduce((sum, a) => sum + a.balance, 0);
 
   return (
     <div className="bg-white rounded-2xl overflow-hidden shadow-sm">
@@ -15,7 +22,7 @@ export default function BankingSection() {
         className="w-full flex items-center justify-between p-4 hover:bg-scotia-grey-50 transition-colors cursor-pointer border-none bg-transparent"
       >
         <span className="text-scotia-red text-[17px] font-bold">
-          Banking ({BANKING_ACCOUNTS.length})
+          Banking ({accounts.length})
         </span>
         {isExpanded ? (
           <ChevronUp size={20} className="text-scotia-red" />

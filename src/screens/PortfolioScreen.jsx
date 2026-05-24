@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { AlertCircle, TrendingUp, ChevronRight, ArrowLeft, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { PORTFOLIO_HOLDINGS, LIVING_RISK_PROFILE, PORTFOLIO_CHART_DATA } from '../data/mockData';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 

@@ -1,7 +1,10 @@
 import { ChevronRight } from 'lucide-react';
-import { TOTAL_HAVE, TOTAL_OWE } from '../../data/mockData';
+import { TOTAL_OWE } from '../../data/mockData';
+import { useApp } from '../../context/useApp';
 
 export default function MyBalancesCard() {
+  const { balances } = useApp();
+
   return (
     <div className="bg-white rounded-2xl p-5 hover:bg-scotia-grey-50 transition-colors cursor-pointer shadow-sm">
       <div className="flex items-center justify-between mb-5">
@@ -16,7 +19,7 @@ export default function MyBalancesCard() {
             <div className="w-2 h-2 bg-scotia-teal rounded-full" />
           </div>
           <div className="text-scotia-grey-900 text-[26px] font-bold">
-            ${TOTAL_HAVE.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            ${balances.netWorth.toLocaleString('en-US', { minimumFractionDigits: 2 })}
           </div>
         </div>
 

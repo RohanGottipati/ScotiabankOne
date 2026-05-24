@@ -1,12 +1,12 @@
-import { Home, ArrowLeftRight, TrendingUp, Circle, Menu } from 'lucide-react';
+import { Home, Zap, TrendingUp, History, ShieldCheck } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const navItems = [
   { id: 'home', icon: Home, label: 'Home', route: '/' },
-  { id: 'move', icon: ArrowLeftRight, label: 'Move Money', route: '/' },
+  { id: 'moment', icon: Zap, label: 'Moment', route: '/moment' },
   { id: 'advice', icon: TrendingUp, label: 'Advice+', route: '/advice' },
-  { id: 'scene', icon: Circle, label: 'Scene+', route: '/history' },
-  { id: 'more', icon: Menu, label: 'More', route: '/risk-profile' },
+  { id: 'history', icon: History, label: 'History', route: '/history' },
+  { id: 'risk', icon: ShieldCheck, label: 'Risk', route: '/risk-profile' },
 ];
 
 export default function BottomNav() {

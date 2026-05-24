@@ -1,20 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronLeft, CheckCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
+import { useApp } from '../context/useApp';
 import { ACTIVE_MOMENT } from '../data/mockData';
 
 export default function MomentDetailScreen() {
   const navigate = useNavigate();
   const { confirmMoment, balances, hasTfsa } = useApp();
 
-  if (!hasTfsa) {
-    navigate('/open-tfsa', { replace: true });
-    return null;
-  }
   const [amount, setAmount] = useState(ACTIVE_MOMENT.suggestedAmount);
   const [loading, setLoading] = useState(false);
   const [showSlider, setShowSlider] = useState(false);
+
+  useEffect(() => {
+    if (!hasTfsa) navigate('/open-tfsa', { replace: true });
+  }, [hasTfsa, navigate]);
+
+  if (!hasTfsa) return null;
 
   const handleConfirm = () => {
     setLoading(true);
